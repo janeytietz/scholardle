@@ -8,7 +8,7 @@ import { GuessInput } from "./components/GuessInput";
 import { GuessList } from "./components/GuessList";
 import { TreeView } from "./components/TreeView";
 import { NetworkGraph } from "./components/NetworkGraph";
-import { Hints } from "./components/Hints";
+import { Clues } from "./components/Clues";
 import { ResultShare } from "./components/ResultShare";
 import { StatsBar } from "./components/StatsBar";
 import { About } from "./components/About";
@@ -118,7 +118,7 @@ function App() {
 
         <GuessList guesses={game.guesses} />
 
-        <Hints
+        <Clues
           target={game.target}
           guessCount={game.guesses.length}
           gameOver={gameOver}

@@ -529,6 +529,81 @@ a .net-label {
   background: #eaf6ec;
 }
 
+/* Clues panel */
+.clues {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  border: 1px solid var(--line-soft);
+  padding: 12px;
+}
+
+.clues-portrait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  width: 124px;
+}
+
+.portrait-img {
+  width: 124px;
+  height: 124px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  background: #f0f0f0;
+  transition: filter 0.5s ease;
+}
+
+.portrait-empty {
+  width: 124px;
+  height: 124px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: var(--line-soft);
+  border: 1px solid var(--line);
+  background: #f6f6f6;
+}
+
+.portrait-caption {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: center;
+  font-style: italic;
+}
+
+.clues-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.clues-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.reveal-btn {
+  padding: 4px 12px;
+  font-size: 0.82rem;
+}
+
+.hint-wide {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.hint-wide .hint-value {
+  text-align: left;
+  font-weight: 400;
+}
+
 /* Hints */
 .hints {
   border: 1px solid var(--line-soft);
@@ -651,5 +726,12 @@ a .net-label {
   }
   .rung-arrow {
     transform: rotate(90deg);
+  }
+  .clues {
+    flex-direction: column;
+    align-items: center;
+  }
+  .clues-body {
+    width: 100%;
   }
 }

@@ -29,10 +29,13 @@ export function About() {
             &ldquo;six degrees of separation.&rdquo;
           </li>
           <li>
-            The <strong>research ladder</strong> across the top reveals the hidden
-            author&rsquo;s field one rung at a time, and more{" "}
-            <strong>hints</strong> unlock as you guess. Every guessed name links
-            to its Wikipedia page.
+            New to the field? You don&rsquo;t need to be an expert. A{" "}
+            <strong>blurred portrait</strong> sharpens with each guess, the{" "}
+            <strong>research ladder</strong> up top reveals the area one rung at a
+            time, and a <strong>clues</strong> panel uncovers the era, initials,
+            and even a bio (with the name blanked out) &mdash; or hit{" "}
+            <em>Reveal a clue</em> whenever you&rsquo;re stuck. Every guessed name
+            opens a Wikipedia card.
           </li>
         </ul>
         <p className="about-foot">
