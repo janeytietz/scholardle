@@ -61,20 +61,26 @@ export function NetworkGraph({
   guesses: GuessResult[];
   gameOver: boolean;
 }) {
+  // The correct guess collapses into the center node, so it isn't plotted
+  // as a separate ring node.
+  const solved = useMemo(() => guesses.some((g) => g.tier === "correct"), [guesses]);
+
   const placed = useMemo<Placed[]>(() => {
-    return guesses.map((g, i) => {
-      const ring = RING_BY_TIER[g.tier] * MAX_R;
-      const angle = i * GOLDEN;
-      return {
-        id: g.author.id,
-        name: g.author.name,
-        x: CX + ring * Math.cos(angle),
-        y: CY + ring * Math.sin(angle),
-        tier: g.tier,
-        wikiUrl: g.author.wikiUrl,
-        coauthorOfTarget: g.coauthorDistance === 1,
-      };
-    });
+    return guesses
+      .filter((g) => g.tier !== "correct")
+      .map((g, i) => {
+        const ring = RING_BY_TIER[g.tier] * MAX_R;
+        const angle = i * GOLDEN;
+        return {
+          id: g.author.id,
+          name: g.author.name,
+          x: CX + ring * Math.cos(angle),
+          y: CY + ring * Math.sin(angle),
+          tier: g.tier,
+          wikiUrl: g.author.wikiUrl,
+          coauthorOfTarget: g.coauthorDistance === 1,
+        };
+      });
   }, [guesses]);
 
   // Coauthor edges among guessed authors.
@@ -118,21 +124,43 @@ export function NetworkGraph({
             />
           ))}
 
-        {/* target node */}
+        {/* target node: always the actual author, dead center */}
         <g>
-          <circle className="net-target" cx={CX} cy={CY} r={16} />
+          <circle
+            className={`net-target${solved ? " solved" : gameOver ? " revealed" : ""}`}
+            cx={CX}
+            cy={CY}
+            r={gameOver ? 20 : 16}
+          />
           {gameOver ? (
-            target.wikiUrl ? (
-              <a href={target.wikiUrl} target="_blank" rel="noreferrer">
-                <text className="net-label net-target-label" x={CX} y={CY - 24} textAnchor="middle">
+            <>
+              {solved && (
+                <text className="net-qmark" x={CX} y={CY + 6} textAnchor="middle">
+                  &#10003;
+                </text>
+              )}
+              {target.wikiUrl ? (
+                <a href={target.wikiUrl} target="_blank" rel="noreferrer">
+                  <text
+                    className="net-label net-target-label"
+                    x={CX}
+                    y={CY - 28}
+                    textAnchor="middle"
+                  >
+                    {target.name}
+                  </text>
+                </a>
+              ) : (
+                <text
+                  className="net-label net-target-label"
+                  x={CX}
+                  y={CY - 28}
+                  textAnchor="middle"
+                >
                   {target.name}
                 </text>
-              </a>
-            ) : (
-              <text className="net-label net-target-label" x={CX} y={CY - 24} textAnchor="middle">
-                {target.name}
-              </text>
-            )
+              )}
+            </>
           ) : (
             <text className="net-qmark" x={CX} y={CY + 5} textAnchor="middle">
               ?

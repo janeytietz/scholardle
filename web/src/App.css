@@ -342,6 +342,20 @@ a:visited {
   stroke-dasharray: 3 3;
 }
 
+.net-target.solved {
+  fill: #eaf6ec;
+  stroke: var(--tier-correct);
+  stroke-width: 3;
+  stroke-dasharray: none;
+}
+
+.net-target.revealed {
+  fill: #fdeceb;
+  stroke: var(--tier-topic);
+  stroke-width: 3;
+  stroke-dasharray: none;
+}
+
 .net-qmark {
   font-family: Georgia, serif;
   font-size: 20px;
