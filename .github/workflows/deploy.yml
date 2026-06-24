@@ -28,7 +28,10 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: web/package-lock.json
-      - run: npm ci
+      # npm install (not npm ci): the committed lockfile is generated on macOS and
+      # omits some platform-specific optional deps (e.g. @emnapi/* wasm runtime),
+      # which makes strict `npm ci` fail on the Linux runner.
+      - run: npm install --no-audit --no-fund
       - run: npm run build
       - uses: actions/upload-pages-artifact@v5
         with:
