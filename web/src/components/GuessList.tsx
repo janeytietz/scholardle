@@ -17,7 +17,18 @@ function GuessRow({ result }: { result: GuessResult }) {
         {meta.emoji}
       </span>
       <span className="guess-main">
-        <span className="guess-name">{result.author.name}</span>
+        {result.author.wikiUrl ? (
+          <a
+            className="guess-name"
+            href={result.author.wikiUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {result.author.name}
+          </a>
+        ) : (
+          <span className="guess-name">{result.author.name}</span>
+        )}
         <span className="guess-detail">
           {result.tier === "correct"
             ? meta.blurb

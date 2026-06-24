@@ -4,14 +4,22 @@ export function About() {
       <summary>How to play</summary>
       <div className="about-body">
         <p>
-          A new <strong>behavioral scientist</strong> is hidden each day. Guess
-          who it is in as few tries as possible.
+          A <strong>behavioral scientist</strong> is hidden each day &mdash; a
+          figure from the world of judgment &amp; decision-making, prospect
+          theory, intertemporal choice, social norms, heuristics, and nudging.
+          Guess who it is in as few tries as possible.
         </p>
         <ul>
           <li>
-            <strong>Warmth</strong> tells you how close your guess studies to the
-            hidden author, from broad to specific: Domain to Field to Subfield to
-            Topic. Hotter means a more specific shared research area.
+            The hidden author sits at the center of the{" "}
+            <strong>network map</strong>. Each guess joins the map: the closer to
+            the center, the warmer (more specific) the shared research area, and
+            lines connect coauthors.
+          </li>
+          <li>
+            <strong>Warmth</strong> goes from broad to specific: Domain to Field
+            to Subfield to Topic. Hotter means a more specific shared research
+            area.
           </li>
           <li>
             <strong>Degrees of separation</strong> show how connected you are in
@@ -21,9 +29,10 @@ export function About() {
             &ldquo;six degrees of separation.&rdquo;
           </li>
           <li>
-            Stuck? <strong>Hints</strong> unlock as you guess, and the research
-            ladder on the right reveals the hidden author&rsquo;s field one rung
-            at a time.
+            The <strong>research ladder</strong> across the top reveals the hidden
+            author&rsquo;s field one rung at a time, and more{" "}
+            <strong>hints</strong> unlock as you guess. Every guessed name links
+            to its Wikipedia page.
           </li>
         </ul>
         <p className="about-foot">

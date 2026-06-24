@@ -7,6 +7,7 @@ import { useStats } from "./game/useStats";
 import { GuessInput } from "./components/GuessInput";
 import { GuessList } from "./components/GuessList";
 import { TreeView } from "./components/TreeView";
+import { NetworkGraph } from "./components/NetworkGraph";
 import { Hints } from "./components/Hints";
 import { ResultShare } from "./components/ResultShare";
 import { StatsBar } from "./components/StatsBar";
@@ -72,70 +73,64 @@ function App() {
       <StatsBar stats={stats} />
       <About />
 
+      <section className="reveal-strip">
+        <h2 className="section-label">Research area unlocked</h2>
+        <TreeView target={game.target} guesses={game.guesses} revealAll={gameOver} />
+      </section>
+
       <main className="board">
-        <section className="play-column">
-          <div className="status-line">
-            <span>
-              {gameOver
-                ? game.status === "won"
-                  ? "Solved!"
-                  : "Out of guesses"
-                : `Guess ${game.guesses.length + 1} of ${MAX_GUESSES}`}
-            </span>
-            {!gameOver && (
-              <span className="remaining">{game.remaining} left</span>
-            )}
-          </div>
+        <div className="status-line">
+          <span>
+            {gameOver
+              ? game.status === "won"
+                ? "Solved!"
+                : "Out of guesses"
+              : `Guess ${game.guesses.length + 1} of ${MAX_GUESSES}`}
+          </span>
+          {!gameOver && <span className="remaining">{game.remaining} left</span>}
+        </div>
 
-          <GuessInput
-            onGuess={game.guess}
-            guessedIds={guessedIds}
-            disabled={gameOver}
-          />
+        <GuessInput onGuess={game.guess} guessedIds={guessedIds} disabled={gameOver} />
 
-          {closestCollab !== undefined && !gameOver && (
-            <p className="collab-hint">
-              Closest link so far:{" "}
-              <strong>
-                {closestCollab === 1
-                  ? "a direct coauthor (1\u00B0)"
-                  : `${closestCollab}\u00B0 of separation`}
-              </strong>
-            </p>
-          )}
+        {closestCollab !== undefined && !gameOver && (
+          <p className="collab-hint">
+            Closest link so far:{" "}
+            <strong>
+              {closestCollab === 1
+                ? "a direct coauthor (1\u00B0)"
+                : `${closestCollab}\u00B0 of separation`}
+            </strong>
+          </p>
+        )}
 
-          {gameOver && (
-            <ResultShare
-              target={game.target}
-              guesses={game.guesses}
-              won={game.status === "won"}
-              isDaily={game.mode === "daily"}
-              dateLabel={dateKey()}
-              onPractice={game.newPractice}
-            />
-          )}
-
-          <GuessList guesses={game.guesses} />
-        </section>
-
-        <aside className="info-column">
-          <TreeView
+        {gameOver && (
+          <ResultShare
             target={game.target}
             guesses={game.guesses}
-            revealAll={gameOver}
+            won={game.status === "won"}
+            isDaily={game.mode === "daily"}
+            dateLabel={dateKey()}
+            onPractice={game.newPractice}
           />
-          <Hints
-            target={game.target}
-            guessCount={game.guesses.length}
-            gameOver={gameOver}
-          />
-        </aside>
+        )}
+
+        <NetworkGraph target={game.target} guesses={game.guesses} gameOver={gameOver} />
+
+        <GuessList guesses={game.guesses} />
+
+        <Hints
+          target={game.target}
+          guessCount={game.guesses.length}
+          gameOver={gameOver}
+        />
       </main>
 
       <footer className="app-footer">
         <p>
-          Data from <a href="https://openalex.org">OpenAlex</a>. Warmth reflects
-          shared research topics; badges reflect coauthorship.
+          Data from <a href="https://openalex.org">OpenAlex</a> and{" "}
+          <a href="https://wikipedia.org">Wikipedia</a>. Warmth reflects shared
+          research topics; links mark coauthorship (degrees of separation, after
+          Milgram).
         </p>
       </footer>
     </div>

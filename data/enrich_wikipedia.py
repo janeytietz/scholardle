@@ -8,7 +8,7 @@ stores a short 'blurb'. Safe to re-run; existing blurbs are kept unless empty.
 import json
 import os
 
-from build_dataset import WEB_DATA_DIR, OUT_DIR, fetch_wiki_summary
+from build_dataset import WEB_DATA_DIR, OUT_DIR, fetch_wiki_info
 
 SRC = WEB_DATA_DIR
 
@@ -18,10 +18,11 @@ def main():
     authors = json.load(open(path, encoding="utf-8"))
     added = 0
     for i, a in enumerate(authors, 1):
-        if a.get("blurb"):
+        if a.get("blurb") and a.get("wikiUrl"):
             continue
-        blurb = fetch_wiki_summary(a["name"])
-        a["blurb"] = blurb
+        blurb, url = fetch_wiki_info(a["name"])
+        a["blurb"] = blurb or a.get("blurb", "")
+        a["wikiUrl"] = url or a.get("wikiUrl", "")
         if blurb:
             added += 1
         status = "ok" if blurb else "no page"

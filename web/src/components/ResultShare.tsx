@@ -36,7 +36,14 @@ export function ResultShare({
         {won ? "Solved!" : "Out of guesses"}
       </h2>
       <p className="result-answer">
-        The author was <strong>{target.name}</strong>
+        The author was{" "}
+        {target.wikiUrl ? (
+          <a href={target.wikiUrl} target="_blank" rel="noreferrer">
+            <strong>{target.name}</strong>
+          </a>
+        ) : (
+          <strong>{target.name}</strong>
+        )}
         {target.hints.discipline ? ` (${target.hints.discipline})` : ""}.
       </p>
       {target.blurb && <p className="result-blurb">{target.blurb}</p>}

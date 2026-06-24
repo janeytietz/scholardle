@@ -11,9 +11,9 @@ import time
 import urllib.error
 import urllib.request
 
-PROBE = "https://api.openalex.org/authors?search=max%20weber&per_page=1&mailto=social-science-game@example.com"
-MAX_ATTEMPTS = 30
-INTERVAL_S = 120
+PROBE = "https://api.openalex.org/authors?search=esther%20duflo&per_page=1&mailto=social-science-game@example.com"
+MAX_ATTEMPTS = 144
+INTERVAL_S = 300
 
 
 def probe_ok() -> bool:

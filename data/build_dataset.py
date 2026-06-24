@@ -156,26 +156,36 @@ def has_social_topic(topics) -> bool:
     return any(t["domain"]["name"] == SOCIAL_DOMAIN for t in topics)
 
 
-def fetch_wiki_summary(title: str) -> str:
-    """Return a short Wikipedia extract for a page title, or '' if unavailable."""
+def fetch_wiki_info(title: str):
+    """Return (extract, page_url) for a Wikipedia title, or ('', '') if missing."""
     if not title:
-        return ""
+        return "", ""
     slug = urllib.parse.quote(title.replace(" ", "_"), safe="")
     data = get_json(f"https://en.wikipedia.org/api/rest_v1/page/summary/{slug}")
     if not data or data.get("type") == "disambiguation":
-        return ""
-    return data.get("extract", "") or ""
+        return "", ""
+    extract = data.get("extract", "") or ""
+    url = (((data.get("content_urls") or {}).get("desktop") or {}).get("page")) or ""
+    return extract, url
 
 
-def author_blurb(rec: dict) -> str:
-    """Prefer the Wikipedia page OpenAlex links to, else search by name."""
+def fetch_wiki_summary(title: str) -> str:
+    return fetch_wiki_info(title)[0]
+
+
+def author_wiki(rec: dict):
+    """Prefer the Wikipedia page OpenAlex links to, else search by name.
+
+    Returns (blurb, wikiUrl).
+    """
     wiki = (rec.get("ids") or {}).get("wikipedia")
     if wiki and "/wiki/" in wiki:
         title = urllib.parse.unquote(wiki.rstrip("/").split("/wiki/")[-1])
-        blurb = fetch_wiki_summary(title)
+        blurb, url = fetch_wiki_info(title)
         if blurb:
-            return blurb
-    return fetch_wiki_summary(rec.get("display_name", ""))
+            return blurb, (url or wiki)
+    blurb, url = fetch_wiki_info(rec.get("display_name", ""))
+    return blurb, url
 
 
 def fetch_works(author_id: str):
@@ -278,9 +288,11 @@ def main():
             "citedByCount": rec.get("cited_by_count", 0),
             "topics": topics,
             "primaryTopicId": topics[0]["id"],
-            "blurb": author_blurb(rec),
             "seedDiscipline": seed.get("discipline", ""),
         }
+        blurb, wiki_url = author_wiki(rec)
+        resolved[aid]["blurb"] = blurb
+        resolved[aid]["wikiUrl"] = wiki_url
         print(f"  [{i}/{len(unique_seeds)}] {seed['name']} -> {rec.get('display_name')} ({aid})")
 
     resolved_ids = set(resolved.keys())
@@ -325,6 +337,7 @@ def main():
                 "primaryTopicId": a["primaryTopicId"],
                 "topics": a["topics"],
                 "blurb": a.get("blurb", ""),
+                "wikiUrl": a.get("wikiUrl", ""),
                 "hints": a.get("hints", {}),
             }
         )

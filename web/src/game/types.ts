@@ -27,6 +27,7 @@ export interface Author {
   primaryTopicId: string;
   topics: AuthorTopic[];
   blurb?: string;
+  wikiUrl?: string;
   hints: AuthorHints;
 }
 

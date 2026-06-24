@@ -62,12 +62,12 @@ export function TreeView({
         {rungs.map((rung, i) => {
           const revealed = rung.name !== null;
           return (
-            <li
-              key={rung.label}
-              className={`rung depth-${i}${revealed ? " revealed" : " locked"}`}
-            >
-              <span className="rung-level">{rung.label}</span>
-              <span className="rung-name">{revealed ? rung.name : "? ? ?"}</span>
+            <li key={rung.label} className="rung-wrap">
+              {i > 0 && <span className="rung-arrow" aria-hidden>&rarr;</span>}
+              <span className={`rung${revealed ? " revealed" : " locked"}`}>
+                <span className="rung-level">{rung.label}</span>
+                <span className="rung-name">{revealed ? rung.name : "???"}</span>
+              </span>
             </li>
           );
         })}
