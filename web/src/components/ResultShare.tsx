@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { buildShareText } from "../game/share";
 import type { Author, GuessResult } from "../game/types";
+import { WikiCard, hasWikiCard } from "./WikiCard";
 
 export function ResultShare({
   target,
@@ -46,7 +47,11 @@ export function ResultShare({
         )}
         {target.hints.discipline ? ` (${target.hints.discipline})` : ""}.
       </p>
-      {target.blurb && <p className="result-blurb">{target.blurb}</p>}
+      {hasWikiCard(target) ? (
+        <WikiCard author={target} />
+      ) : (
+        target.blurb && <p className="result-blurb">{target.blurb}</p>
+      )}
       {target.hints.notableWork && (
         <p className="result-work">Notable work: {target.hints.notableWork}</p>
       )}

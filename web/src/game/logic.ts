@@ -157,8 +157,88 @@ export function dailyIndex(count: number, key: string = dateKey()): number {
   return perm[((n % count) + count) % count];
 }
 
+/** Diacritic-insensitive "lastname|firstInitial" key for loose name matching. */
+function nameKey(name: string): string {
+  const norm = name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\./g, " ");
+  const parts = norm.split(/\s+/).filter(Boolean);
+  if (!parts.length) return "";
+  return `${parts[parts.length - 1]}|${parts[0][0] ?? ""}`;
+}
+
+/** The day whose puzzle is pinned, and to whom. */
+const ANCHOR_KEY = "2026-06-24";
+const TODAY_PIN = nameKey("Stanley Milgram");
+
+/**
+ * The behavioral-science / nudge realm. These authors lead the rotation
+ * (in a shuffled order) before the puzzle branches out to the wider field.
+ */
+const REALM_NAMES = [
+  "Stanley Milgram", "Daniel Kahneman", "Amos Tversky", "Richard Thaler",
+  "Cass Sunstein", "George Loewenstein", "Colin Camerer", "Dan Ariely",
+  "Robert Cialdini", "Walter Mischel", "Angela Duckworth", "Carol Dweck",
+  "Jonathan Haidt", "Daniel Gilbert", "Elizabeth Loftus", "Leon Festinger",
+  "Philip Zimbardo", "Solomon Asch", "Albert Bandura", "Roy Baumeister",
+  "Paul Ekman", "Martin Seligman", "Mihaly Csikszentmihalyi", "Gerd Gigerenzer",
+  "Paul Slovic", "Gordon Pennycook", "David Rand", "Sendhil Mullainathan",
+  "Eldar Shafir", "Matthew Rabin", "David Laibson", "Robert Shiller",
+  "Katherine Milkman", "Uri Gneezy", "John List", "Ernst Fehr",
+  "Esther Duflo", "Abhijit Banerjee", "Daniel Goleman", "Howard Gardner",
+  "Steven Pinker", "Daniel Goldstein", "Eric Johnson", "Elke Weber",
+  "George Akerlof", "Herbert Simon", "Gary Becker",
+];
+
+/** In-place deterministic Fisher-Yates shuffle. */
+function deterministicShuffle<T>(arr: T[], seed: number): void {
+  const rng = mulberry32(seed);
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rng() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+/**
+ * Full rotation order: today's pinned author first, then the rest of the
+ * behavioral-science realm (shuffled), then everyone else (shuffled).
+ */
+export function dailyAuthorOrder(authors: Author[]): Author[] {
+  const byKey = new Map<string, Author>();
+  for (const a of authors) {
+    const k = nameKey(a.name);
+    if (!byKey.has(k)) byKey.set(k, a);
+  }
+
+  const realmKeys = new Set<string>();
+  const realm: Author[] = [];
+  for (const nm of REALM_NAMES) {
+    const k = nameKey(nm);
+    const a = byKey.get(k);
+    if (a && !realmKeys.has(k)) {
+      realmKeys.add(k);
+      realm.push(a);
+    }
+  }
+
+  const pinned = realm.filter((a) => nameKey(a.name) === TODAY_PIN);
+  const realmRest = realm.filter((a) => nameKey(a.name) !== TODAY_PIN);
+  const rest = authors.filter((a) => !realmKeys.has(nameKey(a.name)));
+
+  deterministicShuffle(realmRest, 0x51ed2701);
+  deterministicShuffle(rest, 0x1b873593);
+
+  return [...pinned, ...realmRest, ...rest];
+}
+
 export function pickDailyAuthor(authors: Author[], key: string = dateKey()): Author {
-  return authors[dailyIndex(authors.length, key)];
+  if (authors.length === 0) return authors[0];
+  const order = dailyAuthorOrder(authors);
+  const pos = dayNumber(key) - dayNumber(ANCHOR_KEY);
+  const n = order.length;
+  return order[((pos % n) + n) % n];
 }
 
 export function pickRandomAuthor(authors: Author[]): Author {

@@ -28,6 +28,7 @@ export interface Author {
   topics: AuthorTopic[];
   blurb?: string;
   wikiUrl?: string;
+  wikiImage?: string;
   hints: AuthorHints;
 }
 

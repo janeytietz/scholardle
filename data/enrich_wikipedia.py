@@ -18,14 +18,15 @@ def main():
     authors = json.load(open(path, encoding="utf-8"))
     added = 0
     for i, a in enumerate(authors, 1):
-        if a.get("blurb") and a.get("wikiUrl"):
+        if a.get("blurb") and a.get("wikiUrl") and a.get("wikiImage") is not None and a.get("wikiImage") != "":
             continue
-        blurb, url = fetch_wiki_info(a["name"])
+        blurb, url, image = fetch_wiki_info(a["name"])
         a["blurb"] = blurb or a.get("blurb", "")
         a["wikiUrl"] = url or a.get("wikiUrl", "")
+        a["wikiImage"] = image or a.get("wikiImage", "")
         if blurb:
             added += 1
-        status = "ok" if blurb else "no page"
+        status = ("ok" + (" +img" if image else "")) if blurb else "no page"
         print(f"  [{i}/{len(authors)}] {a['name']}: {status}")
 
     for d in (OUT_DIR, SRC):

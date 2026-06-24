@@ -4,6 +4,7 @@ import {
   coauthorDistance,
   dailyIndex,
   evaluateGuess,
+  pickDailyAuthor,
   tierRank,
 } from "./logic";
 import type { Author, AuthorTopic, CoauthorGraph } from "./types";
@@ -130,6 +131,45 @@ describe("dailyIndex", () => {
   });
   it("advances to a different author the next day", () => {
     expect(dailyIndex(30, "2026-06-24")).not.toBe(dailyIndex(30, "2026-06-25"));
+  });
+});
+
+describe("pickDailyAuthor", () => {
+  function named(name: string): Author {
+    return { ...author(name, [topic("t", "sf", "f")]), name };
+  }
+  const pool = [
+    named("Karl Marx"),
+    named("Daniel Kahneman"),
+    named("Michel Foucault"),
+    named("Stanley Milgram"),
+    named("Max Weber"),
+    named("Amos Tversky"),
+  ];
+
+  it("pins today's puzzle to Stanley Milgram", () => {
+    expect(pickDailyAuthor(pool, "2026-06-24").name).toBe("Stanley Milgram");
+  });
+
+  it("leads with the behavioral realm before branching out", () => {
+    const realm = new Set(["Daniel Kahneman", "Amos Tversky"]);
+    // The three days after the anchor should all still be realm authors,
+    // since the realm (Milgram + Kahneman + Tversky) is exhausted first.
+    for (const key of ["2026-06-25", "2026-06-26"]) {
+      expect(realm.has(pickDailyAuthor(pool, key).name)).toBe(true);
+    }
+  });
+
+  it("is deterministic and non-repeating across a full cycle", () => {
+    const start = new Date(Date.UTC(2026, 5, 24));
+    const seen = new Set<string>();
+    for (let d = 0; d < pool.length; d += 1) {
+      const day = new Date(start);
+      day.setUTCDate(start.getUTCDate() + d);
+      const key = `${day.getUTCFullYear()}-${String(day.getUTCMonth() + 1).padStart(2, "0")}-${String(day.getUTCDate()).padStart(2, "0")}`;
+      seen.add(pickDailyAuthor(pool, key).name);
+    }
+    expect(seen.size).toBe(pool.length);
   });
 });
 
