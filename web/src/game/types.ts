@@ -44,13 +44,7 @@ export interface TreeNode {
 export type CoauthorGraph = Record<string, string[]>;
 
 /** Warmth tiers, from coldest to hottest. `correct` is the win state. */
-export type WarmthTier =
-  | "none"
-  | "domain"
-  | "field"
-  | "subfield"
-  | "topic"
-  | "correct";
+export type WarmthTier = "none" | "field" | "subfield" | "topic" | "correct";
 
 export interface GuessResult {
   author: Author;

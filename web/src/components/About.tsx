@@ -17,9 +17,8 @@ export function About() {
             lines connect coauthors.
           </li>
           <li>
-            <strong>Warmth</strong> goes from broad to specific: Domain to Field
-            to Subfield to Topic. Hotter means a more specific shared research
-            area.
+            <strong>Warmth</strong> goes from broad to specific: Field to
+            Subfield to Topic. Hotter means a more specific shared research area.
           </li>
           <li>
             <strong>Degrees of separation</strong> show how connected you are in

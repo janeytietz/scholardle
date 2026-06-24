@@ -11,10 +11,9 @@ const GOLDEN = 2.399963229728653;
 
 const RING_BY_TIER: Record<WarmthTier, number> = {
   correct: 0.18,
-  topic: 0.32,
-  subfield: 0.5,
-  field: 0.68,
-  domain: 0.84,
+  topic: 0.34,
+  subfield: 0.56,
+  field: 0.78,
   none: 1,
 };
 
@@ -23,7 +22,6 @@ const COLOR_BY_TIER: Record<WarmthTier, string> = {
   topic: "#d93025",
   subfield: "#e8710a",
   field: "#f9ab00",
-  domain: "#1a73e8",
   none: "#80868b",
 };
 
@@ -101,7 +99,7 @@ export function NetworkGraph({
     <div className="network">
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Connection network">
         {/* faint rings to read warmth distance */}
-        {[0.84, 0.68, 0.5, 0.32].map((r) => (
+        {[0.78, 0.56, 0.34].map((r) => (
           <circle key={r} className="net-ring" cx={CX} cy={CY} r={r * MAX_R} />
         ))}
 

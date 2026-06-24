@@ -6,17 +6,21 @@ import type {
   WarmthTier,
 } from "./types";
 
-/** Hierarchy path of ids for a topic, shallow to deep. */
+// The "domain" level is intentionally excluded: every author in this pool is
+// in the social sciences, so a shared domain is trivially true and uninformative.
+// The broadest meaningful match is the field.
+
+/** Hierarchy path of ids for a topic, shallow to deep (field -> topic). */
 function topicIdPath(t: AuthorTopic): string[] {
-  return [t.domain.id, t.field.id, t.subfield.id, t.id];
+  return [t.field.id, t.subfield.id, t.id];
 }
 
-/** Hierarchy path of names for a topic, shallow to deep. */
+/** Hierarchy path of names for a topic, shallow to deep (field -> topic). */
 function topicNamePath(t: AuthorTopic): string[] {
-  return [t.domain.name, t.field.name, t.subfield.name, t.name];
+  return [t.field.name, t.subfield.name, t.name];
 }
 
-const TIER_BY_DEPTH: WarmthTier[] = ["none", "domain", "field", "subfield", "topic"];
+const TIER_BY_DEPTH: WarmthTier[] = ["none", "field", "subfield", "topic"];
 
 /**
  * Deepest shared level across every topic pair between two authors.
@@ -38,7 +42,7 @@ export function bestTopicMatch(a: Author, b: Author): {
     for (const tb of b.topics) {
       const bIds = topicIdPath(tb);
       let depth = 0;
-      while (depth < 4 && aIds[depth] && aIds[depth] === bIds[depth]) {
+      while (depth < 3 && aIds[depth] && aIds[depth] === bIds[depth]) {
         depth += 1;
       }
       if (depth > bestDepth) {
@@ -247,11 +251,10 @@ export function pickRandomAuthor(authors: Author[]): Author {
 
 const TIER_RANK: Record<WarmthTier, number> = {
   none: 0,
-  domain: 1,
-  field: 2,
-  subfield: 3,
-  topic: 4,
-  correct: 5,
+  field: 1,
+  subfield: 2,
+  topic: 3,
+  correct: 4,
 };
 
 export function tierRank(t: WarmthTier): number {
@@ -266,6 +269,5 @@ export const TIER_META: Record<
   topic: { label: "Same topic", emoji: "\u{1F525}", blurb: "Studies the same research topic" },
   subfield: { label: "Same subfield", emoji: "\u{1F7E7}", blurb: "Shares a subfield" },
   field: { label: "Same field", emoji: "\u{1F7E8}", blurb: "Shares a broad field" },
-  domain: { label: "Same domain", emoji: "\u{1F7E6}", blurb: "Both in the social sciences" },
-  none: { label: "Far away", emoji: "\u{2B1B}", blurb: "No shared research area" },
+  none: { label: "Different field", emoji: "\u{2B1B}", blurb: "No shared field" },
 };

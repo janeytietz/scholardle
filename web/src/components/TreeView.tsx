@@ -1,6 +1,6 @@
 import type { Author, GuessResult } from "../game/types";
 
-const LEVEL_LABELS = ["Domain", "Field", "Subfield", "Topic"];
+const LEVEL_LABELS = ["Field", "Subfield", "Topic"];
 
 interface Rung {
   label: string;
@@ -18,14 +18,14 @@ function revealedRungs(target: Author, guesses: GuessResult[]): Rung[] {
 
   for (const g of guesses) {
     for (const tg of g.author.topics) {
-      const gIds = [tg.domain.id, tg.field.id, tg.subfield.id, tg.id];
+      const gIds = [tg.field.id, tg.subfield.id, tg.id];
       for (const tt of target.topics) {
-        const tIds = [tt.domain.id, tt.field.id, tt.subfield.id, tt.id];
+        const tIds = [tt.field.id, tt.subfield.id, tt.id];
         let depth = 0;
-        while (depth < 4 && gIds[depth] && gIds[depth] === tIds[depth]) depth += 1;
+        while (depth < 3 && gIds[depth] && gIds[depth] === tIds[depth]) depth += 1;
         if (depth > bestDepth) {
           bestDepth = depth;
-          bestNames = [tt.domain.name, tt.field.name, tt.subfield.name, tt.name];
+          bestNames = [tt.field.name, tt.subfield.name, tt.name];
         }
       }
     }
@@ -49,7 +49,7 @@ export function TreeView({
   const fullPath = (() => {
     const primary =
       target.topics.find((t) => t.id === target.primaryTopicId) ?? target.topics[0];
-    return [primary.domain.name, primary.field.name, primary.subfield.name, primary.name];
+    return [primary.field.name, primary.subfield.name, primary.name];
   })();
 
   const rungs = revealAll

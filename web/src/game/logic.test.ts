@@ -56,8 +56,8 @@ describe("bestTopicMatch", () => {
   it("matches at the field level", () => {
     expect(bestTopicMatch(kahneman, sameField).tier).toBe("field");
   });
-  it("matches at the domain level", () => {
-    expect(bestTopicMatch(kahneman, sameDomain).tier).toBe("domain");
+  it("returns none when only the domain matches (domain is ignored)", () => {
+    expect(bestTopicMatch(kahneman, sameDomain).tier).toBe("none");
   });
   it("returns none across domains", () => {
     expect(bestTopicMatch(kahneman, differentDomain).tier).toBe("none");
@@ -175,8 +175,7 @@ describe("pickDailyAuthor", () => {
 
 describe("tierRank", () => {
   it("orders tiers from cold to hot", () => {
-    expect(tierRank("none")).toBeLessThan(tierRank("domain"));
-    expect(tierRank("domain")).toBeLessThan(tierRank("field"));
+    expect(tierRank("none")).toBeLessThan(tierRank("field"));
     expect(tierRank("field")).toBeLessThan(tierRank("subfield"));
     expect(tierRank("subfield")).toBeLessThan(tierRank("topic"));
     expect(tierRank("topic")).toBeLessThan(tierRank("correct"));
