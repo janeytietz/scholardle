@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Build output
+web/dist/
+dist/
+
+# Pipeline cache (regenerable)
+data/.cache/
+
+# Logs
+*.log
+
+# OS / editor
+.DS_Store
+*.tsbuildinfo
