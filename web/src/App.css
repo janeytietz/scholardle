@@ -303,6 +303,57 @@ a:visited {
   font-size: 0.9rem;
 }
 
+/* Latest-guess summary line */
+.latest-guess {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid var(--line-soft);
+  border-left: 6px solid var(--tier-none);
+  background: #fafafa;
+}
+
+.latest-emoji {
+  font-size: 1.15rem;
+}
+
+.latest-text {
+  font-size: 0.95rem;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  border: 1px solid var(--line);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.tab {
+  font-family: inherit;
+  font-size: 0.9rem;
+  background: #ececec;
+  color: var(--ink);
+  border: none;
+  border-right: 1px solid var(--line);
+  padding: 7px 16px;
+  cursor: pointer;
+}
+
+.tab:last-child {
+  border-right: none;
+}
+
+.tab.active {
+  background: #d6e4ff;
+  font-weight: 700;
+}
+
+.tab-panel {
+  margin-top: 10px;
+}
+
 /* Network graph */
 .network {
   border: 1px solid var(--line);

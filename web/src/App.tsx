@@ -1,7 +1,7 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { authors } from "./data";
-import { dateKey } from "./game/logic";
+import { dateKey, TIER_META } from "./game/logic";
 import { MAX_GUESSES, useGame } from "./game/useGame";
 import { useStats } from "./game/useStats";
 import { GuessInput } from "./components/GuessInput";
@@ -13,10 +13,20 @@ import { ResultShare } from "./components/ResultShare";
 import { StatsBar } from "./components/StatsBar";
 import { About } from "./components/About";
 
+type Tab = "map" | "guesses" | "clues" | "area";
+
+function connectionLabel(distance: number | null): string {
+  if (distance === null) return "no coauthor link";
+  if (distance === 0) return "";
+  if (distance === 1) return "direct coauthor (1\u00B0)";
+  return `${distance}\u00B0 of separation`;
+}
+
 function App() {
   const game = useGame();
   const { stats, record } = useStats();
   const gameOver = game.status !== "playing";
+  const [tab, setTab] = useState<Tab>("map");
 
   useEffect(() => {
     if (game.mode === "daily" && gameOver) {
@@ -40,10 +50,7 @@ function App() {
     );
   }
 
-  const closestCollab = game.guesses
-    .map((g) => g.coauthorDistance)
-    .filter((d): d is number => d !== null && d > 0)
-    .sort((a, b) => a - b)[0];
+  const latest = game.guesses[game.guesses.length - 1];
 
   return (
     <div className="app">
@@ -73,11 +80,6 @@ function App() {
       <StatsBar stats={stats} />
       <About />
 
-      <section className="reveal-strip">
-        <h2 className="section-label">Research area unlocked</h2>
-        <TreeView target={game.target} guesses={game.guesses} revealAll={gameOver} />
-      </section>
-
       <main className="board">
         <div className="status-line">
           <span>
@@ -92,15 +94,21 @@ function App() {
 
         <GuessInput onGuess={game.guess} guessedIds={guessedIds} disabled={gameOver} />
 
-        {closestCollab !== undefined && !gameOver && (
-          <p className="collab-hint">
-            Closest link so far:{" "}
-            <strong>
-              {closestCollab === 1
-                ? "a direct coauthor (1\u00B0)"
-                : `${closestCollab}\u00B0 of separation`}
-            </strong>
-          </p>
+        {latest && !gameOver && (
+          <div className={`latest-guess tier-${latest.tier}`}>
+            <span className="latest-emoji" aria-hidden>
+              {TIER_META[latest.tier].emoji}
+            </span>
+            <span className="latest-text">
+              <strong>{latest.author.name}</strong> &mdash;{" "}
+              {latest.sharedLabel
+                ? `${TIER_META[latest.tier].label}: ${latest.sharedLabel}`
+                : TIER_META[latest.tier].label}
+              {connectionLabel(latest.coauthorDistance)
+                ? ` \u00B7 ${connectionLabel(latest.coauthorDistance)}`
+                : ""}
+            </span>
+          </div>
         )}
 
         {gameOver && (
@@ -114,15 +122,69 @@ function App() {
           />
         )}
 
-        <NetworkGraph target={game.target} guesses={game.guesses} gameOver={gameOver} />
+        <nav className="tabs" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === "map"}
+            className={tab === "map" ? "tab active" : "tab"}
+            onClick={() => setTab("map")}
+          >
+            Map
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === "guesses"}
+            className={tab === "guesses" ? "tab active" : "tab"}
+            onClick={() => setTab("guesses")}
+          >
+            Guesses ({game.guesses.length})
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === "clues"}
+            className={tab === "clues" ? "tab active" : "tab"}
+            onClick={() => setTab("clues")}
+          >
+            Clues
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === "area"}
+            className={tab === "area" ? "tab active" : "tab"}
+            onClick={() => setTab("area")}
+          >
+            Area
+          </button>
+        </nav>
 
-        <GuessList guesses={game.guesses} />
-
-        <Clues
-          target={game.target}
-          guessCount={game.guesses.length}
-          gameOver={gameOver}
-        />
+        <div className="tab-panel">
+          {tab === "map" && (
+            <NetworkGraph
+              target={game.target}
+              guesses={game.guesses}
+              gameOver={gameOver}
+            />
+          )}
+          {tab === "guesses" && <GuessList guesses={game.guesses} />}
+          {tab === "clues" && (
+            <Clues
+              target={game.target}
+              guessCount={game.guesses.length}
+              gameOver={gameOver}
+            />
+          )}
+          {tab === "area" && (
+            <TreeView
+              target={game.target}
+              guesses={game.guesses}
+              revealAll={gameOver}
+            />
+          )}
+        </div>
       </main>
 
       <footer className="app-footer">
