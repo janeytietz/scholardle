@@ -36,6 +36,11 @@ CACHE_DIR = os.path.join(HERE, ".cache")
 WORKS_PER_AUTHOR = 100
 REQUEST_PAUSE_S = 0.25  # base spacing between live requests
 
+# Topics-only mode: skip the per-author works call to stay within OpenAlex's
+# free daily budget. Topics + institution still come from the author lookup;
+# the coauthor graph is then filled in separately by enrich_coauthors_s2.py.
+SKIP_WORKS = os.environ.get("SKIP_WORKS", "").lower() not in ("", "0", "false", "no")
+
 
 def short_id(openalex_url: str) -> str:
     """Turn 'https://openalex.org/A5111995000' into 'A5111995000'."""
@@ -304,7 +309,7 @@ def main():
     # Fetch works, derive coauthor edges and hints.
     edges = {aid: set() for aid in resolved_ids}
     for i, aid in enumerate(list(resolved_ids), 1):
-        works = fetch_works(aid)
+        works = [] if SKIP_WORKS else fetch_works(aid)
         for w in works:
             for au in w.get("authorships", []):
                 other = short_id((au.get("author") or {}).get("id", ""))
@@ -315,7 +320,8 @@ def main():
         resolved[aid]["hints"] = derive_hints(
             {"discipline": resolved[aid]["seedDiscipline"]}, records[aid], works, primary
         )
-        print(f"  [{i}/{len(resolved_ids)}] {resolved[aid]['name']}: {len(edges[aid])} coauthor link(s)")
+        suffix = " (topics-only)" if SKIP_WORKS else ""
+        print(f"  [{i}/{len(resolved_ids)}] {resolved[aid]['name']}: {len(edges[aid])} coauthor link(s){suffix}")
 
     # Build the union topic tree and tag topic leaves with their primary authors.
     tree = {"id": "root", "name": "All Social Science", "level": 0, "children": []}
