@@ -771,6 +771,24 @@ a .net-label {
   padding: 16px;
 }
 
+/* Maintenance / holding page */
+.maintenance-box {
+  border: 2px solid var(--line);
+  background: #fffef5;
+  padding: 22px;
+  margin-top: 16px;
+}
+
+.maintenance-box h2 {
+  margin: 0 0 10px;
+}
+
+.maintenance-note {
+  font-style: italic;
+  color: var(--muted);
+  margin-bottom: 0;
+}
+
 @media (max-width: 620px) {
   .rung-wrap {
     flex-basis: 100%;
