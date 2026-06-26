@@ -173,9 +173,8 @@ function nameKey(name: string): string {
   return `${parts[parts.length - 1]}|${parts[0][0] ?? ""}`;
 }
 
-/** The day whose puzzle is pinned, and to whom. */
-const ANCHOR_KEY = "2026-06-24";
-const TODAY_PIN = nameKey("Stanley Milgram");
+/** The day the rotation starts counting from. */
+const ANCHOR_KEY = "2026-06-26";
 
 /**
  * The behavioral-science / nudge realm. These authors lead the rotation
@@ -206,8 +205,8 @@ function deterministicShuffle<T>(arr: T[], seed: number): void {
 }
 
 /**
- * Full rotation order: today's pinned author first, then the rest of the
- * behavioral-science realm (shuffled), then everyone else (shuffled).
+ * Full rotation order: the behavioral-science realm (shuffled) leads, then
+ * everyone else (shuffled). Fully deterministic; no author is pinned.
  */
 export function dailyAuthorOrder(authors: Author[]): Author[] {
   const byKey = new Map<string, Author>();
@@ -227,14 +226,12 @@ export function dailyAuthorOrder(authors: Author[]): Author[] {
     }
   }
 
-  const pinned = realm.filter((a) => nameKey(a.name) === TODAY_PIN);
-  const realmRest = realm.filter((a) => nameKey(a.name) !== TODAY_PIN);
   const rest = authors.filter((a) => !realmKeys.has(nameKey(a.name)));
 
-  deterministicShuffle(realmRest, 0x51ed2701);
+  deterministicShuffle(realm, 0x51ed2701);
   deterministicShuffle(rest, 0x1b873593);
 
-  return [...pinned, ...realmRest, ...rest];
+  return [...realm, ...rest];
 }
 
 export function pickDailyAuthor(authors: Author[], key: string = dateKey()): Author {

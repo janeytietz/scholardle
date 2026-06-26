@@ -8,6 +8,7 @@ import {
   tierRank,
 } from "./logic";
 import type { Author, AuthorTopic, CoauthorGraph } from "./types";
+import realAuthors from "../data/authors.json";
 
 function topic(
   topicId: string,
@@ -147,17 +148,18 @@ describe("pickDailyAuthor", () => {
     named("Amos Tversky"),
   ];
 
-  it("pins today's puzzle to Stanley Milgram", () => {
-    expect(pickDailyAuthor(pool, "2026-06-24").name).toBe("Stanley Milgram");
-  });
-
   it("leads with the behavioral realm before branching out", () => {
-    const realm = new Set(["Daniel Kahneman", "Amos Tversky"]);
-    // The three days after the anchor should all still be realm authors,
-    // since the realm (Milgram + Kahneman + Tversky) is exhausted first.
-    for (const key of ["2026-06-25", "2026-06-26"]) {
+    const realm = new Set(["Stanley Milgram", "Daniel Kahneman", "Amos Tversky"]);
+    // The anchor day and the days right after should all be realm authors,
+    // since the realm is exhausted before the puzzle branches out.
+    for (const key of ["2026-06-26", "2026-06-27", "2026-06-28"]) {
       expect(realm.has(pickDailyAuthor(pool, key).name)).toBe(true);
     }
+  });
+
+  it("does not make Milgram today's author in the real dataset", () => {
+    const today = pickDailyAuthor(realAuthors as unknown as Author[], "2026-06-26");
+    expect(today.name).not.toBe("Stanley Milgram");
   });
 
   it("is deterministic and non-repeating across a full cycle", () => {
