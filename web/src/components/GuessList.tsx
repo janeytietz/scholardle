@@ -59,8 +59,9 @@ export function GuessList({ guesses }: { guesses: GuessResult[] }) {
   if (guesses.length === 0) {
     return (
       <p className="empty-guesses">
-        Make a guess to see how close you are. Warmth comes from shared research
-        topics; the badge shows coauthorship links.
+        Make a guess to see how close you are. Warmth comes from shared fields of
+        study; the badge shows coauthorship links. New to the field? Open the{" "}
+        <strong>Scholars</strong> tab to browse everyone and guess from there.
       </p>
     );
   }

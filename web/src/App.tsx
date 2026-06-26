@@ -9,11 +9,13 @@ import { GuessList } from "./components/GuessList";
 import { TreeView } from "./components/TreeView";
 import { NetworkGraph } from "./components/NetworkGraph";
 import { Clues } from "./components/Clues";
+import { FieldGuide } from "./components/FieldGuide";
 import { ResultShare } from "./components/ResultShare";
 import { StatsBar } from "./components/StatsBar";
 import { About } from "./components/About";
+import { Glossary } from "./components/Glossary";
 
-type Tab = "map" | "guesses" | "clues" | "area";
+type Tab = "map" | "guesses" | "clues" | "area" | "guide";
 
 function connectionLabel(distance: number | null): string {
   if (distance === null) return "no coauthor link";
@@ -79,6 +81,7 @@ function App() {
 
       <StatsBar stats={stats} />
       <About />
+      <Glossary />
 
       <main className="board">
         <div className="status-line">
@@ -157,7 +160,16 @@ function App() {
             className={tab === "area" ? "tab active" : "tab"}
             onClick={() => setTab("area")}
           >
-            Area
+            Fields
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === "guide"}
+            className={tab === "guide" ? "tab active" : "tab"}
+            onClick={() => setTab("guide")}
+          >
+            Scholars
           </button>
         </nav>
 
@@ -182,6 +194,13 @@ function App() {
               target={game.target}
               guesses={game.guesses}
               revealAll={gameOver}
+            />
+          )}
+          {tab === "guide" && (
+            <FieldGuide
+              guessedIds={guessedIds}
+              disabled={gameOver}
+              onGuess={game.guess}
             />
           )}
         </div>
