@@ -14,5 +14,6 @@ export function buildShareText(
   const collab = guesses.some((g) => g.coauthorDistance === 1)
     ? "\n\u{1F517} found a collaborator"
     : "";
-  return `${header} ${score}\n${grid}${collab}`;
+  const url = "https://janeytietz.github.io/scholardle/";
+  return `${header} ${score}\n${grid}${collab}\n${url}`;
 }

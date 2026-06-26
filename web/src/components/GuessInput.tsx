@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { authorsByName } from "../data";
+import { primaryField } from "../game/logic";
 import type { Author } from "../game/types";
 
 interface Props {
@@ -103,7 +104,7 @@ export function GuessInput({ onGuess, guessedIds, disabled }: Props) {
                 }}
               >
                 <span className="suggestion-name">{a.name}</span>
-                <span className="suggestion-meta">{a.hints.discipline}</span>
+                <span className="suggestion-meta">{primaryField(a)}</span>
                 {already && <span className="suggestion-used">guessed</span>}
               </li>
             );

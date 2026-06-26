@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { buildShareText } from "../game/share";
+import { primaryField } from "../game/logic";
 import type { Author, GuessResult } from "../game/types";
 import { WikiCard, hasWikiCard } from "./WikiCard";
 
@@ -45,15 +46,12 @@ export function ResultShare({
         ) : (
           <strong>{target.name}</strong>
         )}
-        {target.hints.discipline ? ` (${target.hints.discipline})` : ""}.
+        {primaryField(target) ? ` (${primaryField(target)})` : ""}.
       </p>
       {hasWikiCard(target) ? (
         <WikiCard author={target} />
       ) : (
         target.blurb && <p className="result-blurb">{target.blurb}</p>
-      )}
-      {target.hints.notableWork && (
-        <p className="result-work">Notable work: {target.hints.notableWork}</p>
       )}
       <div className="result-actions">
         <button type="button" className="btn primary" onClick={share}>

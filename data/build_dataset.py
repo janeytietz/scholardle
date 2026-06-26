@@ -41,6 +41,18 @@ REQUEST_PAUSE_S = 0.25  # base spacing between live requests
 # the coauthor graph is then filled in separately by enrich_coauthors_s2.py.
 SKIP_WORKS = os.environ.get("SKIP_WORKS", "").lower() not in ("", "0", "false", "no")
 
+# OpenAlex sometimes returns a display_name in the wrong script/encoding
+# (Cyrillic, dotless-i, wrong accents, unicode hyphens). Override by OpenAlex id
+# so the canonical English name is used everywhere (UI, Wikipedia, S2 lookups).
+NAME_OVERRIDES = {
+    "A5035242470": "Pierre Bourdieu",
+    "A5003087402": "Elinor Ostrom",
+    "A5032113724": "Paul Krugman",
+    "A5073914493": "Ted O'Donoghue",
+    "A5080262984": "Jan-Emmanuel De Neve",
+    "A5085199294": "Alfréd Rényi",
+}
+
 
 def short_id(openalex_url: str) -> str:
     """Turn 'https://openalex.org/A5111995000' into 'A5111995000'."""
@@ -181,7 +193,7 @@ def fetch_wiki_summary(title: str) -> str:
     return fetch_wiki_info(title)[0]
 
 
-def author_wiki(rec: dict):
+def author_wiki(rec: dict, name_hint: str = ""):
     """Prefer the Wikipedia page OpenAlex links to, else search by name.
 
     Returns (blurb, wikiUrl, wikiImage).
@@ -192,7 +204,7 @@ def author_wiki(rec: dict):
         blurb, url, image = fetch_wiki_info(title)
         if blurb:
             return blurb, (url or wiki), image
-    return fetch_wiki_info(rec.get("display_name", ""))
+    return fetch_wiki_info(name_hint or rec.get("display_name", ""))
 
 
 def fetch_works(author_id: str):
@@ -286,10 +298,11 @@ def main():
         if not has_social_topic(topics):
             print(f"  [{i}/{len(unique_seeds)}] non-social match for {seed['name']} (likely wrong person), skipping")
             continue
+        display_name = NAME_OVERRIDES.get(aid) or rec.get("display_name") or seed["name"]
         records[aid] = rec
         resolved[aid] = {
             "id": aid,
-            "name": rec.get("display_name", seed["name"]),
+            "name": display_name,
             "seedName": seed["name"],
             "worksCount": rec.get("works_count", 0),
             "citedByCount": rec.get("cited_by_count", 0),
@@ -297,7 +310,7 @@ def main():
             "primaryTopicId": topics[0]["id"],
             "seedDiscipline": seed.get("discipline", ""),
         }
-        blurb, wiki_url, wiki_image = author_wiki(rec)
+        blurb, wiki_url, wiki_image = author_wiki(rec, display_name)
         resolved[aid]["blurb"] = blurb
         resolved[aid]["wikiUrl"] = wiki_url
         resolved[aid]["wikiImage"] = wiki_image

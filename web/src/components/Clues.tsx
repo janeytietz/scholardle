@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Author } from "../game/types";
+import { significantFields } from "../game/logic";
 
 function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -35,14 +36,21 @@ interface Clue {
 }
 
 function buildClues(a: Author): Clue[] {
-  const primary = a.topics[0];
+  const fields = significantFields(a);
+  const topPaper = a.keyPapers?.[0];
   const clues: Clue[] = [
-    { label: "Field", value: primary?.field?.name || a.hints.discipline || "" },
+    { label: "Primary field", value: fields[0] || a.hints.discipline || "" },
+    { label: "Also works in", value: fields.slice(1, 3).join(", ") },
     { label: "Active era", value: a.hints.era },
     { label: "Initials", value: initials(a.name) },
     { label: "Institution", value: a.hints.institution },
-    { label: "Subfield", value: primary?.subfield?.name || "" },
-    { label: "Notable work", value: a.hints.notableWork, wide: true },
+    {
+      label: "Key paper",
+      value: topPaper
+        ? `${topPaper.title}${topPaper.year ? ` (${topPaper.year})` : ""}`
+        : a.hints.notableWork,
+      wide: true,
+    },
     { label: "Bio (name hidden)", value: redactedBio(a), wide: true },
   ];
   return clues.filter((c) => c.value);

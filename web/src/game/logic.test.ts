@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
-  bestTopicMatch,
   coauthorDistance,
   dailyIndex,
   evaluateGuess,
+  fieldMatch,
   pickDailyAuthor,
+  significantFields,
   tierRank,
 } from "./logic";
-import type { Author, AuthorTopic, CoauthorGraph } from "./types";
+import type { Author, AuthorTopic, FieldRef } from "./types";
+import type { CoauthorGraph } from "./types";
 import realAuthors from "../data/authors.json";
 
 function topic(
@@ -26,49 +28,65 @@ function topic(
   };
 }
 
-function author(id: string, topics: AuthorTopic[]): Author {
+function author(id: string, fields: FieldRef[], topics: AuthorTopic[] = []): Author {
+  const t = topics.length ? topics : [topic("t", "sf", "f")];
   return {
     id,
     name: id,
     worksCount: 1,
     citedByCount: 1,
-    primaryTopicId: topics[0].id,
-    topics,
+    primaryTopicId: t[0].id,
+    topics: t,
+    fields,
     hints: { era: "", notableWork: "", institution: "", discipline: "" },
   };
 }
 
-const kahneman = author("A1", [topic("t_decision", "sf_decision", "f_decision")]);
-const tversky = author("A2", [topic("t_decision", "sf_decision", "f_decision")]);
-const sameSubfield = author("A3", [topic("t_other", "sf_decision", "f_decision")]);
-const sameField = author("A4", [topic("t_x", "sf_x", "f_decision")]);
-const sameDomain = author("A5", [topic("t_y", "sf_y", "f_socio")]);
-const differentDomain = author("A6", [topic("t_z", "sf_z", "f_bio", "d_life")]);
+function f(name: string, count: number): FieldRef {
+  return { name, count };
+}
 
-describe("bestTopicMatch", () => {
-  it("matches at the topic level", () => {
-    expect(bestTopicMatch(kahneman, tversky).tier).toBe("topic");
+// Primary Economics, with Psychology also significant.
+const kahneman = author("A1", [f("Economics", 50), f("Psychology", 20)]);
+// Same primary + a second shared field -> hottest.
+const tversky = author("A2", [f("Economics", 40), f("Psychology", 30)]);
+// Same primary only (Law too sparse to count) -> warm.
+const samePrimary = author("A3", [f("Economics", 40), f("Law", 4)]);
+// Two shared fields but different primary -> warm.
+const twoShared = author("A6", [f("Psychology", 50), f("Economics", 30)]);
+// Exactly one shared field, different primary -> cool.
+const sharedField = author("A4", [f("Psychology", 50), f("Sociology", 9)]);
+// No overlap.
+const noOverlap = author("A5", [f("Sociology", 30)]);
+
+describe("significantFields", () => {
+  it("keeps prominent fields and drops sparse ones", () => {
+    expect(significantFields(samePrimary)).toEqual(["Economics"]);
   });
-  it("matches at the subfield level", () => {
-    const m = bestTopicMatch(kahneman, sameSubfield);
+  it("falls back to OpenAlex topic fields when no S2 profile", () => {
+    const a = author("A8", [], [topic("t", "sf", "Economics")]);
+    a.fields = undefined;
+    expect(significantFields(a)).toEqual(["Economics"]);
+  });
+});
+
+describe("fieldMatch", () => {
+  it("is hottest with same primary and >= 2 shared fields", () => {
+    expect(fieldMatch(kahneman, tversky).tier).toBe("topic");
+  });
+  it("is warm when only the primary field is shared", () => {
+    const m = fieldMatch(kahneman, samePrimary);
     expect(m.tier).toBe("subfield");
-    expect(m.sharedLabel).toBe("sf_decision");
+    expect(m.sharedLabel).toBe("Economics");
   });
-  it("matches at the field level", () => {
-    expect(bestTopicMatch(kahneman, sameField).tier).toBe("field");
+  it("is warm when two fields overlap despite different primaries", () => {
+    expect(fieldMatch(kahneman, twoShared).tier).toBe("subfield");
   });
-  it("returns none when only the domain matches (domain is ignored)", () => {
-    expect(bestTopicMatch(kahneman, sameDomain).tier).toBe("none");
+  it("is cool when a single field is shared and primaries differ", () => {
+    expect(fieldMatch(kahneman, sharedField).tier).toBe("field");
   });
-  it("returns none across domains", () => {
-    expect(bestTopicMatch(kahneman, differentDomain).tier).toBe("none");
-  });
-  it("uses the best branch across multiple topics", () => {
-    const multi = author("A7", [
-      topic("t_far", "sf_far", "f_far", "d_far"),
-      topic("t_decision", "sf_decision", "f_decision"),
-    ]);
-    expect(bestTopicMatch(multi, tversky).tier).toBe("topic");
+  it("returns none with no shared field", () => {
+    expect(fieldMatch(kahneman, noOverlap).tier).toBe("none");
   });
 });
 
@@ -137,7 +155,7 @@ describe("dailyIndex", () => {
 
 describe("pickDailyAuthor", () => {
   function named(name: string): Author {
-    return { ...author(name, [topic("t", "sf", "f")]), name };
+    return { ...author(name, []), name };
   }
   const pool = [
     named("Karl Marx"),

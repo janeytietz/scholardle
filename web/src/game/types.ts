@@ -19,6 +19,20 @@ export interface AuthorHints {
   discipline: string;
 }
 
+/** A Semantic Scholar field of study with how many of the author's papers touch it. */
+export interface FieldRef {
+  name: string;
+  count: number;
+}
+
+/** A representative paper (top-cited) for an author, from Semantic Scholar. */
+export interface KeyPaper {
+  title: string;
+  year: number | null;
+  citationCount: number;
+  url: string | null;
+}
+
 export interface Author {
   id: string;
   name: string;
@@ -30,6 +44,10 @@ export interface Author {
   wikiUrl?: string;
   wikiImage?: string;
   hints: AuthorHints;
+  /** Ranked Semantic Scholar fields of study (most papers first). */
+  fields?: FieldRef[];
+  /** Top-cited representative papers. */
+  keyPapers?: KeyPaper[];
 }
 
 export interface TreeNode {

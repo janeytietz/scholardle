@@ -1,64 +1,69 @@
-import type {
-  Author,
-  AuthorTopic,
-  CoauthorGraph,
-  GuessResult,
-  WarmthTier,
-} from "./types";
+import type { Author, CoauthorGraph, GuessResult, WarmthTier } from "./types";
 
-// The "domain" level is intentionally excluded: every author in this pool is
-// in the social sciences, so a shared domain is trivially true and uninformative.
-// The broadest meaningful match is the field.
+// Closeness ("warmth") is computed from Semantic Scholar fields of study, a
+// small, accurate, flat vocabulary (Economics, Psychology, Sociology, Political
+// Science, Mathematics, Law, ...). For each author we take their "significant"
+// fields (those that appear across enough of their papers); the first is their
+// primary field. Two authors are warmer the more of these fields they share.
 
-/** Hierarchy path of ids for a topic, shallow to deep (field -> topic). */
-function topicIdPath(t: AuthorTopic): string[] {
-  return [t.field.id, t.subfield.id, t.id];
+/** Stable id for a field, used to group guesses in the network map. */
+export function fieldId(name: string): string {
+  return `field:${name.toLowerCase().replace(/\s+/g, "-")}`;
 }
-
-/** Hierarchy path of names for a topic, shallow to deep (field -> topic). */
-function topicNamePath(t: AuthorTopic): string[] {
-  return [t.field.name, t.subfield.name, t.name];
-}
-
-const TIER_BY_DEPTH: WarmthTier[] = ["none", "field", "subfield", "topic"];
 
 /**
- * Deepest shared level across every topic pair between two authors.
- * Returns matched depth (0 none .. 4 topic) plus the shared node id/label.
+ * An author's significant fields, most prominent first. Falls back to the
+ * OpenAlex topic field names for any author missing a Semantic Scholar profile.
  */
-export function bestTopicMatch(a: Author, b: Author): {
-  depth: number;
+export function significantFields(a: Author): string[] {
+  const fs = a.fields ?? [];
+  if (fs.length > 0) {
+    const top = fs[0].count;
+    const threshold = Math.max(3, top * 0.15);
+    const sig = fs.filter((f) => f.count >= threshold).map((f) => f.name);
+    return sig.length ? sig : [fs[0].name];
+  }
+  const names: string[] = [];
+  for (const t of a.topics) {
+    if (t.field?.name && !names.includes(t.field.name)) names.push(t.field.name);
+  }
+  return names;
+}
+
+/** The single field an author is most associated with. */
+export function primaryField(a: Author): string {
+  return significantFields(a)[0] ?? a.hints.discipline ?? "";
+}
+
+/**
+ * Warmth between two authors based on shared fields of study.
+ *  - topic    (hot)  : same primary field AND >= 2 shared fields, or >= 3 shared
+ *  - subfield (warm) : same primary field, or >= 2 shared fields
+ *  - field    (cool) : share at least one field
+ *  - none            : no shared field
+ */
+export function fieldMatch(a: Author, b: Author): {
   tier: WarmthTier;
   sharedNodeId: string | null;
   sharedLabel: string;
 } {
-  let bestDepth = 0;
-  let bestNodeId: string | null = null;
-  let bestLabel = "";
+  const aFields = significantFields(a);
+  const bFields = significantFields(b);
+  const bSet = new Set(bFields);
+  const shared = aFields.filter((f) => bSet.has(f));
 
-  for (const ta of a.topics) {
-    const aIds = topicIdPath(ta);
-    const aNames = topicNamePath(ta);
-    for (const tb of b.topics) {
-      const bIds = topicIdPath(tb);
-      let depth = 0;
-      while (depth < 3 && aIds[depth] && aIds[depth] === bIds[depth]) {
-        depth += 1;
-      }
-      if (depth > bestDepth) {
-        bestDepth = depth;
-        bestNodeId = aIds[depth - 1] ?? null;
-        bestLabel = aNames[depth - 1] ?? "";
-      }
-    }
+  if (shared.length === 0) {
+    return { tier: "none", sharedNodeId: null, sharedLabel: "" };
   }
 
-  return {
-    depth: bestDepth,
-    tier: TIER_BY_DEPTH[bestDepth],
-    sharedNodeId: bestNodeId,
-    sharedLabel: bestLabel,
-  };
+  const samePrimary = aFields[0] === bFields[0];
+  let tier: WarmthTier;
+  if ((samePrimary && shared.length >= 2) || shared.length >= 3) tier = "topic";
+  else if (samePrimary || shared.length >= 2) tier = "subfield";
+  else tier = "field";
+
+  const label = shared[0];
+  return { tier, sharedNodeId: fieldId(label), sharedLabel: label };
 }
 
 /** Shortest path length between two authors in the coauthor graph (BFS). */
@@ -103,7 +108,7 @@ export function evaluateGuess(
       coauthorDistance: 0,
     };
   }
-  const match = bestTopicMatch(guess, target);
+  const match = fieldMatch(guess, target);
   return {
     author: guess,
     tier: match.tier,
@@ -263,8 +268,8 @@ export const TIER_META: Record<
   { label: string; emoji: string; blurb: string }
 > = {
   correct: { label: "Correct!", emoji: "\u{1F7E9}", blurb: "You found the author" },
-  topic: { label: "Same topic", emoji: "\u{1F525}", blurb: "Studies the same research topic" },
-  subfield: { label: "Same subfield", emoji: "\u{1F7E7}", blurb: "Shares a subfield" },
-  field: { label: "Same field", emoji: "\u{1F7E8}", blurb: "Shares a broad field" },
-  none: { label: "Different field", emoji: "\u{2B1B}", blurb: "No shared field" },
+  topic: { label: "Very close", emoji: "\u{1F525}", blurb: "Same primary field and overlapping research" },
+  subfield: { label: "Same primary field", emoji: "\u{1F7E7}", blurb: "Shares a primary field of study" },
+  field: { label: "Shared field", emoji: "\u{1F7E8}", blurb: "Works in a field this author also works in" },
+  none: { label: "No shared field", emoji: "\u{2B1B}", blurb: "No field of study in common" },
 };

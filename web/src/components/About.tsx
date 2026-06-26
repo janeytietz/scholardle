@@ -17,8 +17,10 @@ export function About() {
             lines connect coauthors.
           </li>
           <li>
-            <strong>Warmth</strong> goes from broad to specific: Field to
-            Subfield to Topic. Hotter means a more specific shared research area.
+            <strong>Warmth</strong> is based on shared{" "}
+            <strong>fields of study</strong>: yellow means you share a field,
+            orange means you share their main field, and red (hottest) means you
+            share their main field plus more.
           </li>
           <li>
             <strong>Degrees of separation</strong> show how connected you are in

@@ -189,9 +189,10 @@ function App() {
 
       <footer className="app-footer">
         <p>
-          Data from <a href="https://openalex.org">OpenAlex</a> and{" "}
+          Data from <a href="https://www.semanticscholar.org">Semantic Scholar</a>,{" "}
+          <a href="https://openalex.org">OpenAlex</a>, and{" "}
           <a href="https://wikipedia.org">Wikipedia</a>. Warmth reflects shared
-          research topics; links mark coauthorship (degrees of separation, after
+          fields of study; links mark coauthorship (degrees of separation, after
           Milgram).
         </p>
       </footer>
